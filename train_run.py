@@ -51,7 +51,7 @@ if __name__ == "__main__":
         label_list = [line.strip() for line in f.readlines()]
 
     # Инициализация модели
-    input_size = 2319  # Размер объединенного эмбеддинга (примерный размер, подставьте реальный)
+    input_size = 1792  # Размер объединенного эмбеддинга (примерный размер, подставьте реальный)
     num_classes = len(label_list)
 
     # Создание модели с переданными параметрами скрытых слоев
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         bert_model_name=args.bert_model_name,
         xclip_model_name=args.xclip_model_name,
         ast_model_name=args.ast_model_name,
-        max_workers=12,
+        max_workers=8,
         device=device,
         num_frames=32
     )

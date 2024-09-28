@@ -15,16 +15,21 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
     if not os.path.exists(results_dir):
         os.makedirs(results_dir)
 
-    # Для ранней остановки
+    # Для ранней остановки и отслеживания лучших метрик
     best_loss = float('inf')
+    best_f1 = 0.0  # Инициализация лучшей F1-меры
     patience_counter = 0
-    
+
     # Хранение статистики потерь, точности и F1-меры
     train_losses = []
     val_losses = []
     train_accuracies = []
     val_accuracies = []
     val_f1_scores = []  # Хранение F1-меры на валидации
+
+    # Определяем пути для сохранения моделей с суффиксами
+    save_model_path_loss = save_model_path.replace('.pth', '_loss.pth')
+    save_model_path_f1 = save_model_path.replace('.pth', '_f1.pth')
 
     # Внешний прогресс-бар для всех эпох
     with tqdm(total=num_epochs, desc='Обучение модели', unit='эпоха') as epoch_bar:
@@ -98,10 +103,9 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
                 with torch.no_grad():
                     for data in val_loader:
                         inputs, labels = data["combined_embedding"].to(device), data["labels"].to(device)
-                        
+
                         outputs = model(inputs)
 
-                        print(outputs, labels)
                         loss = criterion(outputs, labels)
                         val_running_loss += loss.item()
 
@@ -150,7 +154,7 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
                 train_sample_pairs.append((pred_labels, true_labels))
 
             # Выбираем 3 случайных примера из всей выборки
-            train_random_samples = random.sample(train_sample_pairs, min(3, len(train_sample_pairs)))
+            train_random_samples = random.sample(train_sample_pairs, min(10, len(train_sample_pairs)))
 
             for pred_labels, true_labels in train_random_samples:
                 print(f"Обучение: ({', '.join(true_labels)}) -> ({', '.join(pred_labels)})")
@@ -164,23 +168,30 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
                 true_labels = [label_list[i] for i, value in enumerate(true) if value == 1]
                 val_sample_pairs.append((pred_labels, true_labels))
 
-            val_random_samples = random.sample(val_sample_pairs, min(3, len(val_sample_pairs)))
+            val_random_samples = random.sample(val_sample_pairs, min(10, len(val_sample_pairs)))
 
             for pred_labels, true_labels in val_random_samples:
                 print(f"Валидация: ({', '.join(true_labels)}) -> ({', '.join(pred_labels)})")
 
-            # Сохранение модели, если валидационная ошибка улучшилась
+            # ======== Сохранение модели при улучшении потерь на валидации ========
             if epoch_val_loss < best_loss:
                 best_loss = epoch_val_loss
                 patience_counter = 0
-                torch.save(model.state_dict(), save_model_path)
+                torch.save(model.state_dict(), save_model_path_loss)
+                print(f"Сохранена лучшая модель по потере на валидации: {save_model_path_loss}")
             else:
                 patience_counter += 1
 
+            # ======== Сохранение модели при улучшении F1-меры на валидации ========
+            if epoch_f1_score > best_f1:
+                best_f1 = epoch_f1_score
+                torch.save(model.state_dict(), save_model_path_f1)
+                print(f"Сохранена лучшая модель по F1-мере на валидации: {save_model_path_f1}")
+
             # Ранняя остановка, если модель не улучшалась в течение `early_stopping_patience` эпох
-            if patience_counter >= early_stopping_patience:
-                print(f"Ранняя остановка на эпохе {epoch + 1}. Потери на валидации не улучшались в течение {early_stopping_patience} эпох.")
-                break
+            # if patience_counter >= early_stopping_patience:
+            #     print(f"Ранняя остановка на эпохе {epoch + 1}. Потери на валидации не улучшались в течение {early_stopping_patience} эпох.")
+            #     break
 
             epoch_bar.update(1)
 

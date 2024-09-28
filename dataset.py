@@ -76,12 +76,12 @@ class MultimodalVideoDataset(Dataset):
     def process_text(self, text_data):
         bert_text_tokens = self.bert_tokenizer(
             text_data, return_tensors='pt', padding=True, truncation=True
-        ).to(self.device)  
+        ).to(self.device)
         bert_text_embedding = self.bert_model(**bert_text_tokens).pooler_output.squeeze()
         return bert_text_embedding
 
     def process_audio(self, audio_path):
-        output_dim = self.ast_model.config.num_labels 
+        output_dim = self.ast_model.config.num_labels
         if not os.path.exists(audio_path):
             return torch.zeros((1, output_dim)).to(self.device)
 
@@ -103,7 +103,7 @@ class MultimodalVideoDataset(Dataset):
 
         audio_input = self.ast_feature_extractor(
             waveform, sampling_rate=sample_rate, return_tensors="pt", padding=True
-        ).to(self.device)  
+        ).to(self.device)
         with torch.no_grad():
             audio_embedding = self.ast_model(**audio_input).logits.squeeze()
 
@@ -117,38 +117,54 @@ class MultimodalVideoDataset(Dataset):
         tags = [tag.strip().lower() for tag in str(row["tags"]).split(",")]
         video_path = os.path.join(self.video_folder, f"{video_id}.mp4")
         audio_path = os.path.join(self.video_folder, f"{video_id}.wav")
-        
 
         text_data = title + " " + description
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            future_video = executor.submit(self.extract_video_frames, video_path, self.num_frames)
-            future_text = executor.submit(self.process_text, text_data)
-            future_audio = executor.submit(self.process_audio, audio_path)
+        # Путь к сохраненному комбинированному эмбеддингу
+        embedding_path = os.path.join(self.video_folder, f"{video_id}_embedding_video_text.pt")
 
-            video_frames_tensor = future_video.result().unsqueeze(0).to(self.device)
-            text_embedding = future_text.result().to(self.device)
-            audio_embedding = future_audio.result().to(self.device)
+        # Проверяем, существует ли уже комбинированный эмбеддинг
+        if os.path.exists(embedding_path):
+            # Загружаем комбинированный эмбеддинг
+            combined_embedding = torch.load(embedding_path).to(self.device)
+        else:
+            # Вычисляем комбинированный эмбеддинг
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                future_video = executor.submit(self.extract_video_frames, video_path, self.num_frames)
+                future_text = executor.submit(self.process_text, text_data)
+                # future_audio = executor.submit(self.process_audio, audio_path)
 
-            xclip_text_inputs = self.xclip_tokenizer(
-                text_data, return_tensors='pt', padding=True, truncation=True
-            ).to(self.device)
+                video_frames_tensor = future_video.result().unsqueeze(0).to(self.device)
+                text_embedding = future_text.result().to(self.device)
+                # audio_embedding = future_audio.result().to(self.device)
 
-            with torch.no_grad():
-                xclip_output = self.xclip_model(
-                    pixel_values=video_frames_tensor,
-                    input_ids=xclip_text_inputs['input_ids'],
-                    attention_mask=xclip_text_inputs['attention_mask']
-                )
-                video_text_embedding = torch.cat(
-                    (
-                        xclip_output.text_embeds.squeeze(0).squeeze(0),
-                        xclip_output.video_embeds.squeeze(0)
-                    ),
-                    dim=-1
-                )
+                xclip_text_inputs = self.xclip_tokenizer(
+                    text_data, return_tensors='pt', padding=True, truncation=True
+                ).to(self.device)
 
-        combined_embedding = torch.cat((video_text_embedding, audio_embedding.squeeze(0), text_embedding), dim=-1)
+                with torch.no_grad():
+                    xclip_output = self.xclip_model(
+                        pixel_values=video_frames_tensor,
+                        input_ids=xclip_text_inputs['input_ids'],
+                        attention_mask=xclip_text_inputs['attention_mask']
+                    )
+                    video_text_embedding = torch.cat(
+                        (
+                            xclip_output.text_embeds.squeeze(0).squeeze(0),
+                            xclip_output.video_embeds.squeeze(0)
+                        ),
+                        dim=-1
+                    )
+
+            # combined_embedding = torch.cat(
+            #     (video_text_embedding, audio_embedding.squeeze(0), text_embedding), dim=-1
+            # )
+            combined_embedding = torch.cat(
+                (video_text_embedding, text_embedding), dim=-1
+            )
+
+            # Сохраняем комбинированный эмбеддинг
+            torch.save(combined_embedding.cpu(), embedding_path)
 
         labels = torch.zeros(len(self.label_list)).to(self.device)
         lower_label_list = [label.lower() for label in self.label_list]

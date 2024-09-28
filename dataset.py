@@ -155,7 +155,6 @@ class MultimodalVideoDataset(Dataset):
         for tag in tags:
             if tag in lower_label_list:
                 labels[lower_label_list.index(tag)] = 1
-
         return {
             "combined_embedding": combined_embedding,
             "labels": labels

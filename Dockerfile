@@ -1,8 +1,4 @@
-# Use the official PyTorch image with CUDA support (if you have a GPU)
 FROM pytorch/pytorch:1.12.1-cuda11.3-cudnn8-runtime
-
-# Alternatively, if you don't need GPU support, you can use the CPU image
-# FROM pytorch/pytorch:1.12.1-cpu
 
 # Set the working directory in the container
 WORKDIR /app
@@ -25,5 +21,5 @@ COPY . .
 # Set environment variables (if any)
 ENV PYTHONUNBUFFERED=1
 
-# Set the entrypoint to your script
-CMD ["python", "your_script.py"]
+# Open interactive shell as the entrypoint
+ENTRYPOINT ["/bin/bash"]

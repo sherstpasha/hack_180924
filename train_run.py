@@ -62,7 +62,7 @@ if __name__ == "__main__":
         hidden_layers=args.hidden_layers,
         verbose=True
     )
-    print(model)
+    print(model, device)
 
     # Создание датасета и DataLoader'ов
     dataset = MultimodalVideoDataset(

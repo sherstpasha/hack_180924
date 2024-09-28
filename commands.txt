@@ -1,1 +1,8 @@
-python train_run.py --video_folder_path "C:/Users/user/Desktop/train_tag_video_2/videos_2" --csv_file_path "C:/Users/user/Desktop/train_dataset_tag_video/baseline/train_data_categories.csv" --labels_file_path "C:/Users/user/Desktop/train_dataset_tag_video/baseline/processed_tags.txt" --hidden_size 2024 --hidden_layers 50 --batch_size 16 --num_epochs 35 --learning_rate 0.001 --data_split_ratio 0.8 --save_model_path "best_model_2024_50.pth"
+python train_run.py --video_folder_path "C:/Users/user/Desktop/train_tag_video_2/videos_2" --csv_file_path "C:/Users/user/Desktop/train_dataset_tag_video/baseline/train_data_categories.csv" --labels_file_path "C:/Users/user/Desktop/train_dataset_tag_video/baseline/processed_tags.txt" --hidden_size 512 --hidden_layers 5 --batch_size 16 --num_epochs 35 --learning_rate 0.001 --data_split_ratio 0.8 --save_model_path "best_model_2024_50.pth"
+
+python train_run.py --video_folder_path "C:/Users/user/Desktop/train_dataset_tag_video/videos" --csv_file_path "C:/Users/user/Desktop/train_dataset_tag_video/baseline/filtered_train_data_categories.csv" --labels_file_path "C:/Users/user/Desktop/train_dataset_tag_video/baseline/processed_tags.txt" --hidden_size 256 --hidden_layers 2 --batch_size 16 --num_epochs 35 --learning_rate 0.001 --data_split_ratio 0.8 --save_model_path "best_model_2024_50.pth"
+
+
+docker build -t hack280924 .
+
+docker run --gpus all -it -v /путь/к/вашей/папке:/workspace/mounted_folder yolo9

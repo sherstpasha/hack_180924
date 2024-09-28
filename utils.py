@@ -60,6 +60,12 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
 
                     # Прогнозы
                     predicted = (outputs > 0.5).float()
+
+                    # Если ни один из выходов не перешел порог, назначаем метку с максимальным значением
+                    for i, pred in enumerate(predicted):
+                        if pred.sum() == 0:  # Если все метки ниже порога
+                            max_index = outputs[i].argmax()  # Находим индекс максимального значения
+                            predicted[i][max_index] = 1  # Устанавливаем этот индекс как предсказанную метку
                     correct_predictions += (predicted == labels).sum().item()
                     total_samples += labels.numel()
 
@@ -94,11 +100,19 @@ def train_model(model, train_loader, val_loader, criterion, optimizer, num_epoch
                         inputs, labels = data["combined_embedding"].to(device), data["labels"].to(device)
                         
                         outputs = model(inputs)
+
+                        print(outputs, labels)
                         loss = criterion(outputs, labels)
                         val_running_loss += loss.item()
 
                         # Прогнозы
                         predicted = (outputs > 0.5).float()
+
+                        # Если ни один из выходов не перешел порог, назначаем метку с максимальным значением
+                        for i, pred in enumerate(predicted):
+                            if pred.sum() == 0:  # Если все метки ниже порога
+                                max_index = outputs[i].argmax()  # Находим индекс максимального значения
+                                predicted[i][max_index] = 1  # Устанавливаем этот индекс как предсказанную метку
 
                         # Сохранение предсказаний и меток для дальнейшего анализа
                         all_val_labels.extend(labels.cpu().numpy())
@@ -224,6 +238,12 @@ def predict_single_video(model_path, video_path, title, description, label_list=
         
         # Применение порога для бинарной классификации (0.5 по умолчанию)
         predicted_labels = (output > 0.5).squeeze().tolist()
+
+        # Если ни один из выходов не перешел порог, выбираем максимальный
+        if sum(predicted_labels) == 0:
+            max_index = output.argmax().item()  # Находим индекс максимального значения
+            predicted_labels[max_index] = 1  # Устанавливаем этот индекс как предсказанную метку
+
         
     # Проверка, передан ли список меток
     if label_list is None:

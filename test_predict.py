@@ -12,6 +12,7 @@ def parse_arguments():
     parser.add_argument('--title', type=str, default="Example Video Title", help="Название видео")
     parser.add_argument('--description', type=str, default="This is an example description of the video.", help="Описание видео")
 
+    return parser.parse_args()
 
 # ======== Пример использования ======== #
 if __name__ == "__main__":

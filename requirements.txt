@@ -1,0 +1,10 @@
+torch
+torchvision
+transformers
+tqdm
+scikit-learn
+pandas
+opencv-python
+librosa
+moviepy
+matplotlib

@@ -23,10 +23,10 @@ if __name__ == "__main__":
 
     # Получение предсказанных меток
     predicted_tags = predict_single_video(
-        model_path=model_folder_path,
-        video_path=video_folder_path,
-        title=title,
-        description=description,
+        model_path=args.model_folder_path,
+        video_path=args.video_folder_path,
+        title=args.title,
+        description=args.description,
         label_list=None, 
         device=device
     )

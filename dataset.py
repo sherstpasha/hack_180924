@@ -199,7 +199,7 @@ class SingleVideoDataset(MultimodalVideoDataset):
         text_data = self.title + " " + self.description
         video_tensor = self.extract_video_frames(self.video_path, self.num_frames).unsqueeze(0).to(self.device)
         text_embedding = self.process_text(text_data).to(self.device)
-        audio_tensor = self.extract_audio_from_video(self.video_path, "temp_audio.wav").to(self.device)
+        #audio_tensor = self.extract_audio_from_video(self.video_path, "temp_audio.wav").to(self.device)
 
         xclip_text_inputs = self.xclip_tokenizer(text_data, return_tensors='pt', padding=True, truncation=True).to(self.device)
         with torch.no_grad():
@@ -211,7 +211,8 @@ class SingleVideoDataset(MultimodalVideoDataset):
         video_text_embedding = torch.cat((xclip_output.text_embeds.squeeze(0).squeeze(0), xclip_output.video_embeds.squeeze(0)), dim=-1)
 
         # Создание комбинированного эмбеддинга
-        combined_embedding = torch.cat((video_text_embedding, audio_tensor.squeeze(0), text_embedding), dim=-1).unsqueeze(0).to(self.device)
+        #combined_embedding = torch.cat((video_text_embedding, audio_tensor.squeeze(0), text_embedding), dim=-1).unsqueeze(0).to(self.device)
+        combined_embedding = torch.cat((video_text_embedding, text_embedding), dim=-1).unsqueeze(0).to(self.device)
 
         return combined_embedding
 

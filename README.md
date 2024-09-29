@@ -1,6 +1,6 @@
 ## Запуск обучения модели MultimodalClassificationModel
 
-### Пример команды для запуска
+### Пример команды для запуска обучения
 ```bash
 python train_run.py \
     --video_folder_path "C:/Users/user/train_tag_video_2/videos_2" \
@@ -29,7 +29,12 @@ python train_run.py \
 - `--xclip_model_name`: Путь или имя модели XCLIP (по умолчанию: `"microsoft/xclip-base-patch16-zero-shot"`).
 - `--ast_model_name`: Путь или имя модели AST (по умолчанию: `"MIT/ast-finetuned-audioset-10-10-0.4593"`).
 
-### Пример минимального запуска
+### Пример запуска обучения с основными параметрами
 ```bash
 python train_run.py --video_folder_path "C:/path/to/videos" --csv_file_path "C:/path/to/data.csv" --labels_file_path "C:/path/to/labels.txt"
+```
+
+### Пример запуска тегирования одиночного видео
+```bash
+python test_predict.py --model_folder_path best_final_model.pth --video_folder_path videos/c618d967758fcd6fe731e3bd4ba986f9.mp4 --title "Артмеханика. Упражнение радиоведущих." --description "Радиоведущие знают, как расслабить мышцы."
 ```

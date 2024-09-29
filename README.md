@@ -39,7 +39,7 @@ python train_run.py --video_folder_path "C:/path/to/videos" --csv_file_path "C:/
 python test_predict.py \
     --model_folder_path best_final_model.pth \
     --video_folder_path "C:/path/to/videos/test.mp4" \
-    --labels_file_path "C:/path/to/labels.txt" \
+    --label_list_path "C:/path/to/labels.txt" \
     --title "Название видео" \
     --description "Описание видео"
 ```

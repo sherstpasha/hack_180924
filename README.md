@@ -38,8 +38,8 @@ python train_run.py --video_folder_path "C:/path/to/videos" --csv_file_path "C:/
 ```bash
 python test_predict.py \
     --model_folder_path best_final_model.pth \
-    --video_folder_path videos/c618d967758fcd6fe731e3bd4ba986f9.mp4 \
-    --labels_file_path "C:/Users/user/train_dataset_tag_video/baseline/processed_tags.txt" \
-    --title "Артмеханика. Упражнение радиоведущих." \
-    --description "Радиоведущие знают, как расслабить мышцы."
+    --video_folder_path "C:/path/to/videos/test.mp4" \
+    --labels_file_path "C:/path/to/labels.txt" \
+    --title "Название видео" \
+    --description "Описание видео"
 ```

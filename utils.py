@@ -6,6 +6,7 @@ import random
 from sklearn.metrics import f1_score
 import torch
 from dataset import SingleVideoDataset
+from model import MultimodalClassificationModel
 
 
 def train_model(model, train_loader, val_loader, criterion, optimizer, num_epochs=10, device='cpu', early_stopping_patience=5, save_model_path='best_model.pth', scheduler=None, label_list=[], results_dir='results'):
@@ -223,7 +224,11 @@ def predict_single_video(model_path, video_path, title, description, label_list=
     - Список предсказанных индексов (если label_list не передан).
     """
     # Загрузка модели
-    model = torch.load(model_path, map_location=device)
+    model = MultimodalClassificationModel(input_size=1792, num_classes=141, hidden_size=512, hidden_layers=2, verbose=False)
+    checkpoint = torch.load(model_path)
+    model.load_state_dict(checkpoint)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
     model.eval()
     
     # Создание экземпляра SingleVideoDataset

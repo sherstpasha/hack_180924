@@ -19,7 +19,8 @@ class MultimodalVideoDataset(Dataset):
                  xclip_model_name="microsoft/xclip-base-patch16-zero-shot",
                  ast_model_name="MIT/ast-finetuned-audioset-10-10-0.4593",
                  num_frames=8, max_workers=4, device='cpu'):
-        self.data = pd.read_csv(csv_file)
+        if not csv_file is None:
+            self.data = pd.read_csv(csv_file)
         self.video_folder = video_folder
         self.label_list = label_list
         self.num_frames = num_frames
